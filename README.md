@@ -1,7 +1,7 @@
 ember-cli-deploy-airbrake
 ==============================================================================
 
-> An ember-cli-deploy-plugin to upload javascript sourcemaps to [Airbrake]().
+> An ember-cli-deploy-plugin to upload javascript sourcemaps to [Airbrake](https://airbrake.io/).
 
 ## What is an ember-cli-deploy plugin?
 
