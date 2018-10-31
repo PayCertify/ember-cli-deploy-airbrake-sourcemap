@@ -1,7 +1,13 @@
 ember-cli-deploy-airbrake
 ==============================================================================
 
-[Short description of the addon.]
+> An ember-cli-deploy-plugin to upload javascript sourcemaps to [Airbrake]().
+
+## What is an ember-cli-deploy plugin?
+
+A plugin is an addon that can be executed as a part of the ember-cli-deploy pipeline. A plugin will implement one or more of the ember-cli-deploy's pipeline hooks.
+
+For more information on what plugins are and how they work, please refer to the [Plugin Documentation][10].
 
 Installation
 ------------------------------------------------------------------------------
@@ -49,3 +55,6 @@ License
 ------------------------------------------------------------------------------
 
 This project is licensed under the [MIT License](LICENSE.md).
+
+
+[10]: http://ember-cli-deploy.com/docs/v1.0.x/using-plugins/ "Plugin Documentation"
