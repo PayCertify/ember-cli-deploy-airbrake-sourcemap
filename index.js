@@ -9,11 +9,10 @@ const zlib = require('zlib');
 const BasePlugin = require('ember-cli-deploy-plugin');
 
 module.exports = {
-  name: require('./package').name,
+  name: 'ember-cli-deploy-airbrake-sourcemap',
 
-  createDeployPlugin: function (options) {
-    console.log('entrou');
-    var DeployPlugin = BasePlugin.extend({
+  createDeployPlugin(options) {
+    const DeployPlugin = BasePlugin.extend({
       name: options.name,
 
       defaultConfig: Object.freeze({
@@ -33,50 +32,43 @@ module.exports = {
             return process.env.SOURCE_VERSION || '';
           }
         },
-        environment: function (context) {
-          var airbrakeConfig = context.config["airbrake-sourcemap"].airbrakeConfig;
-          var buildConfig = context.config.build;
-          var environment = airbrakeConfig ? airbrakeConfig.environment : false;
-          return environment || buildConfig.environment || 'production';
-        },
         additionalFiles: [],
       }),
-      requiredConfig: Object.freeze(['projectId', 'projectKey']),
+      requiredConfig: Object.freeze(['projectId', 'projectKey', 'publicUrl']),
 
-      upload: function () {
-        console.log('entrou 2');
-        var log = this.log.bind(this);
-        var distDir = this.readConfig('distDir');
-        var distFiles = this.readConfig('distFiles');
-        var projectId = this.readConfig('projectId');
-        var projectKey = this.readConfig('projectKey');
-        var revisionKey = this.readConfig('revisionKey');
+      upload() {
+        let log = this.log.bind(this);
+        let distDir = this.readConfig('distDir');
+        let distFiles = this.readConfig('distFiles');
+        let projectId = this.readConfig('projectId');
+        let projectKey = this.readConfig('projectKey');
+        let revisionKey = this.readConfig('revisionKey');
+        let publicUrl = this.readConfig('publicUrl');
 
         log('Uploading sourcemaps to Airbrake', { verbose: true });
 
-        var publicUrl = this.readConfig('publicUrl');
+        let promiseArray = [];
+        let jsMapPairs = fetchJSMapPairs(distFiles, publicUrl, distDir);
 
-        var promiseArray = [];
-        var jsMapPairs = fetchJSMapPairs(distFiles, publicUrl, distDir);
+        for (let i = 0; i < jsMapPairs.length; i++) {
+          let mapFilePath = jsMapPairs[i].mapFile;
+          let jsFilePath = jsMapPairs[i].jsFile;
 
-        for (var i = 0; i < jsMapPairs.length; i++) {
-          var mapFilePath = jsMapPairs[i].mapFile;
-          var jsFilePath = jsMapPairs[i].jsFile;
+          let formData = {
+            name: jsFilePath,
+            file: this._readSourceMap(mapFilePath)
+          };
 
-          var formData = {
+          log(`Uploading sourcemap to Airbrake: version=${revisionKey} name=${jsFilePath} file=${mapFilePath}`, { verbose: true });
+          let promise = request({
+            uri: `https://airbrake.io/api/v4/projects/${projectId}/sourcemaps`,
+            method: 'POST',
             headers: {
               'Authorization': `Bearer ${projectKey}`
             },
-            name: jsFilePath,
-            file: this._readSourceMap(mapFilePath),
-            version: revisionKey,
-          };
-
-          log(`Uploading sourcemap to Airbrake: version=${revisionKey} name=${jsFilePath}`, { verbose: true });
-          var promise = request({
-            uri: `https://airbrake.io/api/v4/projects/${projectId}/sourcemaps`,
-            method: 'POST',
             formData: formData
+          }).then(function (body) {
+            log(`body: ${body}`, { verbose: true });
           });
           promiseArray.push(promise);
         }
@@ -88,7 +80,7 @@ module.exports = {
       },
 
       _readSourceMap(mapFilePath) {
-        var relativeMapFilePath = mapFilePath.replace(this.readConfig('distDir') + '/', '');
+        let relativeMapFilePath = mapFilePath.replace(this.readConfig('distDir') + '/', '');
         if (this.readConfig('gzippedFiles').indexOf(relativeMapFilePath) !== -1) {
           // When the source map is gzipped, we need to eagerly load it into a buffer
           // so that the actual content length is known.
@@ -109,8 +101,13 @@ module.exports = {
 };
 
 function fetchJSMapPairs(distFiles, publicUrl, distUrl) {
-  var jsFiles = indexByBaseFilename(fetchFilePaths(distFiles, '', 'js'));
-  return fetchFilePaths(distFiles, '', 'map').map(function (mapFile) {
+  let jsFiles = indexByBaseFilename(fetchFilePaths(distFiles, '', 'map'));
+  let filesPaths = fetchFilePaths(distFiles, '', 'map').filter((file) => {
+    // hack to ignore auto-import source maps: https://github.com/ef4/ember-auto-import/issues/144
+    // auto-impot-fastboot-**.map is always empty causing bad request on airbrake
+    return !/auto-import-fastboot-[0-9a-f]+\.(js|map)$/.test(file);
+  });
+  return filesPaths.map(function (mapFile) {
     return {
       mapFile: distUrl + mapFile,
       jsFile: publicUrl + jsFiles[getBaseFilename(mapFile)]
