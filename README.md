@@ -1,4 +1,4 @@
-ember-cli-deploy-airbrake
+ember-cli-deploy-airbrake-sourcemap
 ==============================================================================
 
 > An ember-cli-deploy-plugin to upload javascript sourcemaps to [Airbrake](https://airbrake.io/).
@@ -13,24 +13,53 @@ Installation
 ------------------------------------------------------------------------------
 
 ```
-ember install ember-cli-deploy-airbrake
+ember install ember-cli-deploy-airbrake-sourcemap
 ```
 
+### Quick start
 
-Usage
+To get up and running quickly, do the following:
+
+- Ensure [ember-cli-deploy-build][2] is installed and configured
+
+Enable sourcemaps for all environments in `ember-cli-build.js`:
+
+```js
+/* jshint node:true */
+/* global require, module */
+const EmberApp = require('ember-cli/lib/broccoli/ember-app');
+
+module.exports = function(defaults) {
+  let app = new EmberApp(defaults, {
+    // …
+    sourcemaps: {
+      enabled: true, // This allows sourcemaps to be generated in all environments
+      extensions: ['js']
+    }
+  });
+```
+
+Set Bugsnag options in your [`config/deploy.js`](http://ember-cli-deploy.com/docs/v1.0.x/configuration/). The following example assumes the values for the options will be set as environment variables on your server.
+
+```js
+  /* jshint node: true */
+
+  module.exports = function(deployTarget) {
+    // …
+
+    ENV['airbrake-sourcemap'] = {
+      projectId:  process.env.AIRBRAKE_PROJECT_ID,
+      projectKey: process.env.AIRBRAKE_PROJECT_KEY,
+      publicUrl: 'https://my.example.com'
+    };
+
+    // …
+
+    return ENV;
+  };
+```
+
 ------------------------------------------------------------------------------
-
-[Longer description of how to use the addon in apps.]
-
-
-Contributing
-------------------------------------------------------------------------------
-
-### Installation
-
-* `git clone <repository-url>`
-* `cd ember-cli-deploy-airbrake`
-* `npm install`
 
 ### Linting
 
@@ -56,5 +85,5 @@ License
 
 This project is licensed under the [MIT License](LICENSE.md).
 
-
+[2]: https://github.com/ember-cli-deploy/ember-cli-deploy-build "ember-cli-deploy-build"
 [10]: http://ember-cli-deploy.com/docs/v1.0.x/using-plugins/ "Plugin Documentation"
