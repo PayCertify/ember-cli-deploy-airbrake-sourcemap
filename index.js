@@ -12,6 +12,7 @@ module.exports = {
   name: require('./package').name,
 
   createDeployPlugin: function (options) {
+    console.log('entrou');
     var DeployPlugin = BasePlugin.extend({
       name: options.name,
 
@@ -43,6 +44,7 @@ module.exports = {
       requiredConfig: Object.freeze(['projectId', 'projectKey']),
 
       upload: function () {
+        console.log('entrou 2');
         var log = this.log.bind(this);
         var distDir = this.readConfig('distDir');
         var distFiles = this.readConfig('distFiles');
@@ -50,7 +52,7 @@ module.exports = {
         var projectKey = this.readConfig('projectKey');
         var revisionKey = this.readConfig('revisionKey');
 
-        log('Uploading sourcemaps to Rollbar', { verbose: true });
+        log('Uploading sourcemaps to Airbrake', { verbose: true });
 
         var publicUrl = this.readConfig('publicUrl');
 
