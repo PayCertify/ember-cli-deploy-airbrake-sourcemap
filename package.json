@@ -1,14 +1,14 @@
 {
   "name": "ember-cli-deploy-airbrake-sourcemap",
   "version": "0.1.0",
-  "description": "The default blueprint for ember-cli addons.",
+  "description": "An ember-cli-deploy-plugin to upload javascript sourcemaps to Airbrake",
   "keywords": [
     "ember-addon",
     "ember-cli-deploy-plugin",
     "airbrake",
     "sourcemaps"
   ],
-  "repository": "",
+  "repository": "https://github.com/PayCertify/ember-cli-deploy-airbrake-sourcemap",
   "license": "MIT",
   "author": "",
   "directories": {
