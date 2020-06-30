@@ -1,6 +1,6 @@
 {
   "name": "ember-cli-deploy-airbrake-sourcemap",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An ember-cli-deploy-plugin to upload javascript sourcemaps to Airbrake",
   "keywords": [
     "ember-addon",
